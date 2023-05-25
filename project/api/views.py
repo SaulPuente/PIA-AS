@@ -13,8 +13,7 @@ class test(APIView):
 
     def post(self, request):
         try:
-
-            imagen = request.FILES['imagen'] 
+            imagen = request.data['imagen'] if not 'imagen' in request.FILES else request.FILES['imagen']
             data = request.data
             with Image.open(imagen) as img1:
                 new = Image.new("RGBA", (1000,600), "white")
@@ -84,7 +83,8 @@ class test(APIView):
                 with open(data['destino'] + "/etiqueta.png", "rb") as f:
                     return HttpResponse(f.read(), content_type="image/jpeg")
         except IOError as e:
-            red = Image.new('RGBA', (1, 1), (255,0,0,0))
+            print(e)
+            red = Image.new('RGBA', (1000, 1000), (255,0,0,0))
             response = HttpResponse(content_type="image/jpeg")
             red.save(response, "png")
             return response
