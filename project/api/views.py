@@ -13,47 +13,77 @@ class test(APIView):
 
     def post(self, request):
         try:
-            print(request.FILES)
-            with Image.open("/Users/sypr/Desktop/Captura de pantalla 2023-05-24 a la(s) 12.19.55.png") as img1:
-                new = Image.new("RGBA", (2000,2000), "white")#color=(255,255,255,0))
-                img1 = img1.resize((500,500))
 
-                new.paste(img1, (500,200))
-                # new.paste(img, (1000,0))
-                # new.paste(img, (500,500))
-                # new.paste(img, (1500,500))
-                # new.paste(img, (0,1000))
-                # new.paste(img, (1000,1000))
-                # new.paste(img, (500,1500))
-                # new.paste(img, (1500,1500))
+            imagen = request.FILES['imagen'] 
+            data = request.data
+            with Image.open(imagen) as img1:
+                new = Image.new("RGBA", (1000,600), "white")
+                
+                width, height = img1.size
 
-                new.save("collage.png")
+                p = 220/float(height) 
+                img1 = img1.resize((int(width*p), int(height*p)))
 
-                img = Image.open('collage.png')
+                new.paste(img1, (580,120))
+
+                line1 = ""
+
+                product_name = data['producto'].split()
+                
+                i = 0
+                while i < len(product_name) and len(line1) + len(product_name[i]) < 32:
+                    line1 += " " + product_name[i]
+                    i += 1
+                line2 = ""
+                while i < len(product_name) and len(line2) + len(product_name[i]) < 32:
+                    line2 += " " + product_name[i]
+                    i += 1
+
+                new.save(data['destino'] + "/etiqueta.png")
+
+                img = Image.open(data['destino'] + "/etiqueta.png")
 
                 # Call draw Method to add 2D graphics in an image
                 I1 = ImageDraw.Draw(img)
 
-                myFont = ImageFont.truetype('/Library/Fonts/Arial.ttf', 65)
+                myFont = ImageFont.truetype('C:/Windows/Fonts/Arial.ttf', 16)
+                font_producto = ImageFont.truetype('C:/Windows/Fonts/Arial.ttf', 40)
 
-                bigFont = ImageFont.truetype('/Library/Fonts/Arial.ttf', 200)
+                bigFont = ImageFont.truetype('C:/Windows/Fonts/Arial.ttf', 200)
 
-# Add Text to an image
-                I1.text((10, 10), "Nice Car", font=myFont, fill =(255, 0, 0))
+                font_promo = ImageFont.truetype('C:/Windows/Fonts/Arial.ttf', 70)
 
-                I1.text((500, 500), "q onda", font=myFont, fill =(255, 255, 255))
+                I1.text((60, 35), line1, font=font_producto, fill =(0, 0, 0), stroke_width=1, stroke_fill="black")
+                I1.text((60, 80), line2, font=font_producto, fill =(0, 0, 0), stroke_width=1, stroke_fill="black")
 
-                I1.text((500, 700), "holaaa", font=myFont, fill =(0, 0, 0))
+                I1.text((70, 170), "#74119", font=myFont, fill =(0, 0, 0))
 
-                I1.text((0, 400), "20%", font=bigFont, fill =(0, 0, 0))
+                I1.text((160, 150), "Precio reg.:", font=myFont, fill =(0, 0, 0))
+                I1.text((160, 170), ("$" + data['precio_regular']).center(12), font=myFont, fill =(0, 0, 0))
 
-                img.save("collage.png")
+                I1.text((290, 150), "Precio final:", font=myFont, fill =(0, 0, 0))
+                I1.text((290, 170), ("$" + data['precio_final']).center(13), font=myFont, fill =(0, 0, 0))
 
-                with open("collage.png", "rb") as f:
+                I1.text((420, 150), "Ahorra:", font=myFont, fill =(0, 0, 0))
+                I1.text((420, 170), ("$" + data['ahorro']).center(7), font=myFont, fill =(0, 0, 0))
+
+                I1.text((60, 220), data['promocion'] + "%", font=bigFont, fill =(0, 0, 0), stroke_width=2, stroke_fill="black")
+                I1.text((490, 340), "de descuento", font=font_promo, fill =(0, 0, 0), stroke_width=1, stroke_fill="black")
+
+                I1.text((60, 460), "Aplica en producto seleccionado.", font=myFont, fill =(0, 0, 0))
+
+                pdg = ""
+                i = 0
+                while i < len(product_name) and len(pdg) + len(product_name[i]) < 25:
+                    pdg += " " + product_name[i]
+                    i += 1
+                I1.text((370, 500), "Vigencia " + data['vigencia'] + " - PDG: " + pdg + " - SKU: " + data['sku'], font=myFont, fill =(0, 0, 0))
+
+                img.save(data['destino'] + "/etiqueta.png")
+
+                with open(data['destino'] + "/etiqueta.png", "rb") as f:
                     return HttpResponse(f.read(), content_type="image/jpeg")
         except IOError as e:
-            print("que haces aqui?")
-            print(str(e))
             red = Image.new('RGBA', (1, 1), (255,0,0,0))
             response = HttpResponse(content_type="image/jpeg")
             red.save(response, "png")
