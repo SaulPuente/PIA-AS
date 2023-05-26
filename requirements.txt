@@ -5,3 +5,8 @@ django
 djangorestframework
 django-cors-headers
 Pillow
+pylint
+autopep8
+django-crispy-forms
+whitenoise
+psycopg2-binary
